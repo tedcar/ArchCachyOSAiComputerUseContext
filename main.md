@@ -2,11 +2,11 @@
 
 **Welcome to Your New Superpower!** 🚀
 
-This guide explains everything that's been set up on your CachyOS system to make it virtually unbreakable. You now have a three-layer safety net that lets you experiment fearlessly with your computer.
+This guide explains everything that's been set up on your CachyOS system to make it virtually unbreakable. You now have a two-layer safety net that lets you experiment fearlessly with your computer.
 
 ## What You Now Have (The Big Picture)
 
-Think of your system like a building with three floors, each with its own backup system:
+Think of your system like a building with two floors, each with its own backup system:
 
 ### 🏢 **Floor 1: Your Operating System (Root)**
 - **What it protects:** Core system files, drivers, kernels
@@ -18,10 +18,11 @@ Think of your system like a building with three floors, each with its own backup
 - **How it works:** Creates snapshots every hour, keeps 3 daily + 4 weekly + monthly archives
 - **Your benefit:** Mess up your Hyprland config? Restore it in seconds
 
-### 📦 **Floor 3: Your Software (Nix)**
-- **What it protects:** All packages you install through Nix
-- **How it works:** Nix generations + filesystem snapshots
-- **Your benefit:** Install/remove packages without fear, instant rollbacks
+### 📦 **Your Software Management**
+- **What you use:** Standard pacman/AUR packages + isolation when needed
+- **How it works:** Apps install to standard locations, better desktop integration
+- **Your benefit:** Simpler management, better compatibility, easier troubleshooting
+- **When you need isolation:** Use Docker, Python venvs, or AppImages
 
 ## Daily Usage - What You Need to Know
 
@@ -33,13 +34,17 @@ sudo pacman -S packagename
 # Snapshots are created automatically - no action needed!
 ```
 
-**For applications (recommended way):**
+**For applications:**
 ```bash
-# Test first (temporary install):
-nix-shell -p packagename
+# Standard installation:
+paru packagename  # or sudo pacman -S packagename
 
-# If you like it, install permanently:
-nix-env -iA nixpkgs.packagename
+# For development environments:
+docker run -it --rm python:3.11  # temporary container
+python -m venv myproject  # virtual environment
+
+# For portable apps:
+# Download AppImage or install via Flatpak
 ```
 
 ### Before Making Big Changes
@@ -68,13 +73,17 @@ sudo cp /home/.snapshots/[NUMBER]/snapshot/carnateo/.config/hypr/hyprland.conf ~
 sudo cp -r /home/.snapshots/[NUMBER]/snapshot/carnateo/.config/hypr ~/.config/
 ```
 
-**If a Nix package is broken:**
+**If a package is broken:**
 ```bash
-# Rollback to previous state:
-nix-env --rollback
+# Remove problematic package:
+sudo pacman -R packagename
 
-# Or remove the problematic package:
-nix-env -e packagename
+# Or restore system from snapshot if it's a system issue:
+# Boot from GRUB snapshot menu
+
+# For development environments:
+docker rm container_name  # remove broken container
+rm -rf venv_directory     # remove broken virtual environment
 ```
 
 **If your system won't boot:**
@@ -115,8 +124,7 @@ You don't need to do anything for these - they just work:
 
 ### Important Directories
 - `/home/.snapshots/` - Your personal file snapshots
-- `/.snapshots/` - Your system snapshots  
-- `/nix/.snapshots/` - Your package snapshots
+- `/.snapshots/` - Your system snapshots
 
 ## Quick Status Checks
 
@@ -129,7 +137,6 @@ systemctl list-timers | grep -E "(snapper|monthly)"
 ```bash
 snapper -c home list    # Your personal files
 sudo snapper -c root list    # System files
-sudo snapper -c nix list     # Packages
 ```
 
 **Check disk space:**
@@ -161,17 +168,20 @@ sudo cp -r /mnt/.snapshots/[GOOD_NUMBER]/snapshot/* /mnt/
 🚫 **Never run these commands without understanding:**
 - `sudo btrfs subvolume delete`
 - `sudo snapper delete` (unless you know what you're doing)
-- Anything that modifies `/nix/store` directly
+- Anything that modifies system directories directly
 
 ## Maintenance (Monthly)
 
 **Once a month, run this:**
 ```bash
-# Clean up old Nix packages:
-nix-collect-garbage -d
+# Clean up package cache:
+sudo pacman -Sc
 
 # Check system health:
 ~/system-config-log/snapshot-monitor.sh
+
+# Clean up Docker if you use it:
+docker system prune
 ```
 
 That's it! The system is designed to be self-maintaining.
@@ -180,7 +190,7 @@ That's it! The system is designed to be self-maintaining.
 
 ✅ **Fearless Experimentation:** Change anything, break anything, restore in minutes  
 ✅ **Time Travel:** Go back to any point in time for your files  
-✅ **Package Safety:** Install/remove software without consequences  
+✅ **Package Simplicity:** Standard package management with better compatibility
 ✅ **Automatic Protection:** System updates can't permanently break your computer  
 ✅ **Multiple Recovery Options:** Boot-time rollbacks, file-level restores, or full system recovery  
 
@@ -188,7 +198,7 @@ That's it! The system is designed to be self-maintaining.
 
 - **Basic operations:** Check `~/commands/README.txt`
 - **Advanced recovery:** Check `~/commands/emergency-recovery-commands.txt`  
-- **Nix package management:** Check `~/commands/nix-commands.txt`
+- **Package management:** Use standard pacman/AUR commands
 - **System monitoring:** Run `~/system-config-log/snapshot-monitor.sh`
 
 **Remember:** This system is designed so you can't permanently break your computer. Experiment freely! 🎉

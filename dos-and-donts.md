@@ -3,7 +3,7 @@
 
 ## 🎯 Overview
 
-This guide provides essential do's and don'ts for safely managing your CachyOS system with the three-layer backup protection. Following these guidelines ensures maximum system reliability and prevents accidental damage to your backup infrastructure.
+This guide provides essential do's and don'ts for safely managing your CachyOS system with the two-layer backup protection. Following these guidelines ensures maximum system reliability and prevents accidental damage to your backup infrastructure.
 
 ---
 
@@ -19,8 +19,8 @@ snapper -c home create --description "pre-hyprland-experiment"
 # Before system modifications:
 sudo snapper -c root create --description "pre-major-change"
 
-# Before Nix experiments:
-sudo snapper -c nix create --description "pre-package-testing"
+# Before installing new software:
+sudo snapper -c root create --description "pre-software-install"
 ```
 
 **✅ DO use descriptive snapshot names:**
@@ -45,24 +45,29 @@ sudo snapper -c home delete [SNAPSHOT_NUMBERS]
 
 ### 📦 Package Management
 
-**✅ DO test packages temporarily first:**
+**✅ DO test packages safely:**
 ```bash
-# Test before installing permanently:
-nix-shell -p packagename
+# For development environments:
+docker run -it --rm package-name  # Test in container
+python -m venv test-env  # Test Python packages
 
-# Only install permanently if you like it:
-nix-env -iA nixpkgs.packagename
+# For system packages, create snapshot first:
+sudo snapper -c root create --description "pre-package-test"
+sudo pacman -S packagename
 ```
 
 **✅ DO use proper package managers:**
 - **System packages:** `sudo pacman -S packagename`
-- **Applications:** `nix-env -iA nixpkgs.packagename`
-- **Development tools:** `nix-shell -p tool1 tool2`
+- **AUR packages:** `paru packagename` or `yay packagename`
+- **Development tools:** Use language-specific tools (pip, npm, cargo) in isolated environments
 
-**✅ DO clean up old Nix generations monthly:**
+**✅ DO clean up package cache monthly:**
 ```bash
-# Clean up old packages and generations:
-nix-collect-garbage -d
+# Clean up package cache:
+sudo pacman -Sc
+
+# Clean up Docker if used:
+docker system prune
 ```
 
 ### 🔧 System Maintenance
@@ -119,7 +124,6 @@ sudo snapper -c root list | tail -5
 **❌ NEVER delete these directories:**
 - `/.snapshots/` (system snapshots)
 - `/home/.snapshots/` (home snapshots)
-- `/nix/.snapshots/` (Nix snapshots)
 - `/usr/local/bin/` (system scripts)
 - `~/system-config-log/` (monitoring scripts)
 - `~/commands/` (reference documentation)
@@ -127,7 +131,7 @@ sudo snapper -c root list | tail -5
 **❌ NEVER modify these files directly:**
 - `/etc/snapper/configs/*` (without understanding)
 - `/etc/fstab` (without snapshots first)
-- `/nix/store/*` (let Nix manage this)
+- `/usr/lib/` or `/usr/bin/` (let package manager handle these)
 
 **❌ NEVER run these commands carelessly:**
 ```bash
@@ -135,29 +139,32 @@ sudo snapper -c root list | tail -5
 sudo btrfs subvolume delete
 sudo snapper delete [multiple snapshots]
 sudo rm -rf /.snapshots
-sudo rm -rf /nix/store
+sudo rm -rf /home/.snapshots
 ```
 
 ### 📦 Package Management Mistakes
 
-**❌ NEVER install random packages system-wide:**
+**❌ NEVER install random packages system-wide without testing:**
 ```bash
 # Bad - pollutes system:
-sudo pacman -S random-aur-package
+sudo pacman -S untested-aur-package
 
-# Good - test first:
-nix-shell -p random-package
+# Good - test safely:
+# Research package first, read comments, check PKGBUILD
+# Create snapshot before installing untrusted packages
 ```
 
 **❌ NEVER mix package managers incorrectly:**
-- Don't install the same package with both pacman and Nix
-- Don't install system-critical packages with Nix
-- Don't install development tools system-wide
+- Don't install the same package from multiple sources (AUR + Flatpak)
+- Don't install system-critical packages from untrusted sources
+- Don't install development tools system-wide when isolated environments work better
 
-**❌ NEVER ignore Nix environment:**
+**❌ NEVER ignore environment isolation:**
 ```bash
-# Don't forget to source Nix environment:
-export PATH="$HOME/.nix-profile/bin:$PATH"
+# Don't pollute global environment - use isolated environments:
+# Good: python -m venv myproject
+# Good: docker run --rm -it python:3.11
+# Bad: pip install --user random-package (globally)
 ```
 
 ### 🔧 Configuration Mistakes
@@ -203,7 +210,7 @@ sudo snapper -c home list | grep important  # These are protected
 # Dangerous force operations:
 sudo btrfs subvolume delete --commit-each
 sudo snapper delete --sync
-rm -rf ~/.nix-profile  # Let Nix manage this
+# Don't manually remove system-managed directories
 ```
 
 ---
@@ -262,9 +269,9 @@ reboot
 - [ ] Review system logs for errors
 
 **Package Management:**
-- [ ] Clean Nix generations: `nix-collect-garbage -d`
-- [ ] Update Nix channels: `nix-channel --update`
-- [ ] Review installed packages: `nix-env -q`
+- Clean package cache: `sudo pacman -Sc`
+- Update system: `sudo pacman -Syu`
+- Review installed packages: `pacman -Q | grep -v $(pacman -Qqm)` (official) and `pacman -Qqm` (AUR)
 
 **Performance:**
 - [ ] Run optimization: `~/system-config-log/weekly-optimization.sh`
@@ -322,9 +329,9 @@ sudo cp -r /home/.snapshots/[NUMBER]/snapshot/carnateo/.config/app ~/.config/
 ### 🏆 Golden Rules:
 
 1. **Snapshot Before, Experiment After** - Always create snapshots before changes
-2. **Test Before Commit** - Use nix-shell for testing, install permanently only if satisfied
+2. **Test Before Commit** - Use containers or isolated environments for testing, install permanently only if satisfied
 3. **Monitor Regularly** - Check system health weekly with monitoring scripts
-4. **Clean Periodically** - Remove old snapshots and Nix generations monthly
+4. **Clean Periodically** - Remove old snapshots and package cache monthly
 5. **Document Everything** - Keep notes of changes and working configurations
 6. **Verify Constantly** - Ensure automation is working and snapshots are being created
 7. **Learn Gradually** - Understand one system at a time before complex operations

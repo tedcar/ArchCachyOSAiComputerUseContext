@@ -3,7 +3,7 @@
 
 ## Overview
 
-This document provides a comprehensive technical overview of the implemented three-layer backup and recovery system on CachyOS with Btrfs filesystem, Snapper snapshot management, and Nix package manager integration.
+This document provides a comprehensive technical overview of the implemented two-layer backup and recovery system on CachyOS with Btrfs filesystem and Snapper snapshot management.
 
 ## Architecture Components
 
@@ -12,8 +12,8 @@ This document provides a comprehensive technical overview of the implemented thr
 - **Filesystem:** Btrfs with compression (ZSTD level 3)
 - **Storage:** 687GB NVME (nvme0n1p5 partition)
 - **Snapshot Manager:** Snapper with systemd integration
-- **Package Manager (System):** Pacman with snap-pac integration
-- **Package Manager (User):** Nix (single-user installation)
+- **Package Manager:** Pacman/AUR with snap-pac integration
+- **Alternative Isolation:** Docker, Python venvs, AppImages when needed
 
 ### Btrfs Subvolume Structure
 ```
@@ -24,19 +24,18 @@ This document provides a comprehensive technical overview of the implemented thr
 ├── @srv (services)
 ├── @cache (var/cache)
 ├── @log (var/log)
-├── @tmp (var/tmp)
-└── @nix (nix store) (deleted)
+└── @tmp (var/tmp)
 ```
 
 ### Mount Configuration (/etc/fstab)
 ```
 UUID=7fe56155-3285-4140-bc66-31b327591ddc / btrfs subvol=/@,defaults,noatime,compress=zstd,commit=120
 UUID=7fe56155-3285-4140-bc66-31b327591ddc /home btrfs subvol=/@home,defaults,noatime,compress=zstd,commit=120
-UUID=7fe56155-3285-4140-bc66-31b327591ddc /nix btrfs subvol=/@nix,defaults,noatime,compress=zstd,commit=120
+# Nix mount removed - using standard package management
 [additional mounts for @root, @srv, @cache, @log, @tmp]
 ```
 
-## Three-Layer Protection System
+## Two-Layer Protection System
 
 ### Layer 1: System Protection (Root)
 **Purpose:** Protects core OS files, drivers, kernels
@@ -66,19 +65,19 @@ UUID=7fe56155-3285-4140-bc66-31b327591ddc /nix btrfs subvol=/@nix,defaults,noati
 - EXCLUDE_PATTERNS=".cache:.local/share/Trash:Downloads:.local/share/Steam"
 - Monthly important snapshots (never auto-deleted)
 
-### Layer 3: Package Environment Protection (Nix)
-**Purpose:** Protects package installations and environments
-**Technology:** Nix generations + Snapper snapshots
-**Automation:** Manual snapshots + generation management
-**Location:** /nix/.snapshots/
-**Configuration:** /etc/snapper/configs/nix
+### Alternative Package Isolation
+**Purpose:** When needed, use modern isolation tools
+**Options Available:**
+- **Docker containers:** For complex development environments
+- **Python virtual environments:** For Python development
+- **AppImages/Flatpaks:** For portable applications
+- **Standard AUR/pacman:** For system applications
 
-**Settings:**
-- TIMELINE_CREATE="no" (manual only)
-- TIMELINE_LIMIT_DAILY="1"
-- TIMELINE_LIMIT_WEEKLY="2"
-- Conservative retention policy
-- Nix store on dedicated @nix subvolume
+**Advantages:**
+- Apps install to standard paths (better desktop integration)
+- No configuration complexity
+- Better compatibility with desktop environments
+- Easier troubleshooting
 
 ## Automation Systems
 
@@ -184,43 +183,40 @@ FREE_LIMIT="0.1"
 NUMBER_LIMIT_IMPORTANT="999"
 ```
 
-#### /etc/snapper/configs/nix
-```
-SUBVOLUME="/nix"
-TIMELINE_CREATE="no"
-TIMELINE_LIMIT_DAILY="1"
-TIMELINE_LIMIT_WEEKLY="2"
-SPACE_LIMIT="0.2"
-NUMBER_LIMIT="20"
-```
+#### Package Management Approach
+- **System packages:** Use pacman/AUR for system-level software
+- **Development tools:** Use language-specific tools (pip, npm, cargo)
+- **Isolation when needed:** Docker containers or virtual environments
+- **Portable apps:** AppImages or Flatpaks for sandboxed applications
 
-## Nix Integration
+## Package Management Strategy
 
-### Installation Type
-- **Mode:** Single-user installation
-- **Store Location:** /nix/store (on @nix subvolume)
-- **Profile Location:** ~/.nix-profile
-- **Environment:** Manual PATH setup in ~/.bashrc
+### Primary Approach
+- **System Applications:** pacman/AUR (standard Arch packages)
+- **Development Tools:** Language-specific package managers
+- **Benefits:** Standard paths, better integration, simpler management
 
-### Generation Management
-- **Current Generation:** 2 (contains tree package)
-- **Available Generations:** 1, 2, 3
-- **Rollback Capability:** nix-env --rollback
-- **Cleanup:** nix-collect-garbage -d
+### When Isolation is Needed
+- **Docker:** Complex development environments or conflicting dependencies
+- **Python venvs:** Python development with specific package versions
+- **AppImages:** Portable applications without system installation
+- **Flatpaks:** Sandboxed applications with controlled permissions
 
-### Nix Store Protection
-- **Filesystem Snapshots:** Snapper on @nix subvolume
-- **Native Rollbacks:** Nix generation system
-- **Hybrid Approach:** Both systems available for comprehensive recovery
+### Advantages of This Approach
+- Applications install to expected locations (/usr/bin, /usr/share)
+- Desktop files and launchers work correctly
+- Configuration tools (like Wayland/X11) can find applications
+- Simpler troubleshooting and debugging
+- No complex environment setup or PATH management
 
 ## Data Flow and Interactions
 
 ### Package Installation Flow
-1. **System Packages (pacman):**
-   pacman → snap-pac → pre-snapshot → installation → post-snapshot → cleanup
+1. **System Packages (pacman/AUR):**
+   pacman/paru → snap-pac → pre-snapshot → installation → post-snapshot → cleanup
 
-2. **User Packages (nix):**
-   nix-env → new generation → optional manual snapshot
+2. **Development Environments:**
+   Create isolated environment (Docker/venv) → install packages → test → commit or discard
 
 ### Snapshot Creation Flow
 1. **Automatic (Timeline):**
@@ -234,7 +230,7 @@ NUMBER_LIMIT="20"
 
 ### Recovery Flow
 1. **File-level:** Access /[mount]/.snapshots/[number]/snapshot/
-2. **Generation-level:** nix-env --rollback or --switch-generation
+2. **Environment-level:** Recreate Docker containers or virtual environments
 3. **System-level:** GRUB snapshot boot → snapper rollback
 
 ## Security Considerations
@@ -254,7 +250,7 @@ NUMBER_LIMIT="20"
 ### Access Control
 - Root privileges required for system snapshots
 - User privileges sufficient for home snapshots
-- Nix operations as user (single-user install)
+- Development environment operations as user
 - Script execution with appropriate privileges
 
 ## Performance Optimization
@@ -331,9 +327,10 @@ NUMBER_LIMIT="20"
 - **Filesystem:** Native Btrfs snapshot support
 
 ### User Integration
-- **Shell Integration:** Nix environment in ~/.bashrc
+- **Standard Environment:** All tools available in standard PATH
 - **Command Access:** User permissions for home snapshots
 - **Tool Access:** Monitoring and management scripts
+- **Development Tools:** Isolated environments when needed
 
 ## Scalability and Extensibility
 
@@ -369,7 +366,7 @@ NUMBER_LIMIT="20"
 ### Completed Components
 ✅ Three-layer snapshot system fully operational
 ✅ Automation systems active and monitored
-✅ Nix package manager integrated with filesystem protection
+✅ Simplified package management with standard tools
 ✅ Comprehensive monitoring and alerting
 ✅ Advanced restoration tools
 ✅ Complete documentation system
@@ -382,4 +379,4 @@ NUMBER_LIMIT="20"
 - **Performance Impact:** <2% system overhead
 - **Storage Efficiency:** <15% overhead for comprehensive protection
 
-This architecture provides a robust, multi-layered protection system that enables fearless experimentation while maintaining system reliability and recoverability.
+This simplified architecture provides robust protection for the core system while using standard package management for better compatibility and easier maintenance.

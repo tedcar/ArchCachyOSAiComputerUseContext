@@ -72,45 +72,29 @@ This log documents the complete transformation of a standard CachyOS installatio
 
 ---
 
-## Phase 3: Nix Integration
+## Phase 3: System Cleanup - Nix Removal
 
-### Software Installation
-- **Installed:** Nix Package Manager 2.29.1
-- **Type:** Single-user installation
-- **Location:** `/nix/` directory created
+### Decision Made - Traditional Package Management
+- **Removed:** Nix Package Manager (too complex for daily use)
+- **Reason:** Apps had problems finding configs due to non-standard paths
+- **Alternative:** Use Docker, Python virtual environments, and AppImages for isolation when needed
 
 ### Filesystem Changes
-- **Created:** `@nix` Btrfs subvolume (top-level)
-- **Modified:** `/etc/fstab` - Added Nix mount entry:
-  ```
-  UUID=7fe56155-3285-4140-bc66-31b327591ddc /nix btrfs subvol=@nix,defaults,noatime,compress=zstd,commit=120 0 0
-  ```
+- **Deleted:** `/nix/` directory and all contents
+- **Removed:** `@nix` Btrfs subvolume
+- **Modified:** `/etc/fstab` - Removed Nix mount entry
+- **Cleaned:** Snapshots directory `/nix/.snapshots/` (removed)
 
-### Configuration Changes
-- **Modified:** `~/.bashrc` - Added Nix environment:
-  ```bash
-  export PATH="$HOME/.nix-profile/bin:$PATH"
-  ```
+### Configuration Cleanup
+- **Modified:** `~/.bashrc` - Removed Nix environment variables
+- **Removed:** `/etc/snapper/configs/nix` configuration
+- **Cleaned:** All Nix-related profile directories
 
-### Snapper Integration
-- **Added:** New snapper configuration for `/nix`
-- **File Created:** `/etc/snapper/configs/nix`
-- **Settings:**
-  - `TIMELINE_CREATE="no"` (manual-only)
-  - `TIMELINE_LIMIT_DAILY="1"`, `TIMELINE_LIMIT_WEEKLY="2"`
-  - `SPACE_LIMIT="0.2"` (conservative)
-  - `NUMBER_LIMIT="20"` (limited retention)
-
-### Directory Structure
-- **Created:** `/nix/.snapshots/` (Nix snapshot storage)
-- **Subvolume:** `/nix/store/` (on dedicated @nix subvolume)
-- **Profile:** `~/.nix-profile/` (user Nix environment)
-
-### New Capabilities
-- Dual-layer package management (Nix generations + filesystem snapshots)
-- Isolated package environments with nix-shell
-- Rollback capabilities for package installations
-- Conflict-free package management
+### New Approach
+- **Primary:** Use AUR/pacman for system applications (simpler management)
+- **Development:** Python virtual environments, Docker containers when needed
+- **Isolation:** AppImages or Flatpaks for portable applications
+- **Advantage:** All apps install to standard locations, better desktop integration
 
 ---
 
@@ -121,7 +105,7 @@ This log documents the complete transformation of a standard CachyOS installatio
 #### 1. System Monitor (`~/system-config-log/snapshot-monitor.sh`)
 - **Purpose:** Primary system health monitoring tool
 - **Features:**
-  - Multi-layer snapshot analysis (root, home, nix)
+  - Two-layer snapshot analysis (root, home)
   - Disk usage monitoring with color-coded alerts
   - Btrfs filesystem health assessment
   - Service status monitoring
@@ -191,7 +175,6 @@ This log documents the complete transformation of a standard CachyOS installatio
 /dev/nvme0n1p5 (687GB total)
 ├── @ (root filesystem)
 ├── @home (user data) ← Enhanced with snapper
-├── @nix (nix store) ← New subvolume
 ├── @root (root user home)
 ├── @srv (services)
 ├── @cache (var/cache)
@@ -203,8 +186,7 @@ This log documents the complete transformation of a standard CachyOS installatio
 ```
 Active Configurations:
 ├── root: System protection (pre/post pacman)
-├── home: Timeline automation + monthly archives
-└── nix: Package environment protection
+└── home: Timeline automation + monthly archives
 ```
 
 ### Mount Points
@@ -274,7 +256,7 @@ All subvolumes mounted with optimized Btrfs options:
 
 ### Manual Processes
 - **Weekly:** System optimization and performance tuning
-- **Monthly:** Nix garbage collection and generation cleanup
+- **Monthly:** System cleanup and package maintenance
 - **As-needed:** Emergency recovery and restoration
 
 ---
@@ -307,15 +289,16 @@ All subvolumes mounted with optimized Btrfs options:
 - **Protection:** Basic pacman pre/post snapshots only
 - **Coverage:** Root filesystem only
 - **Recovery:** Manual rollback from GRUB only
-- **Packages:** Pacman only (dependency conflicts possible)
+- **Packages:** Pacman only
 - **Monitoring:** None
 - **Documentation:** None
 
 ### After Implementation
-- **Protection:** Three-layer comprehensive system
-- **Coverage:** Root + Home + Package environments
-- **Recovery:** Multiple options (file-level, generation-level, system-level)
-- **Packages:** Pacman + Nix (conflict-free, isolated environments)
+- **Protection:** Two-layer comprehensive system
+- **Coverage:** Root + Home directories
+- **Recovery:** Multiple options (file-level, system-level)
+- **Packages:** Pacman/AUR (clean, standard installation paths)
+- **Alternative isolation:** Docker, Python venvs, AppImages when needed
 - **Monitoring:** Automated health monitoring and alerting
 - **Documentation:** Complete user and technical documentation
 
@@ -343,7 +326,6 @@ All subvolumes mounted with optimized Btrfs options:
 
 ### Configuration Files
 - `/etc/snapper/configs/home`
-- `/etc/snapper/configs/nix`
 - `/etc/systemd/system/monthly-home-archive.service`
 - `/etc/systemd/system/monthly-home-archive.timer`
 
@@ -361,7 +343,6 @@ All subvolumes mounted with optimized Btrfs options:
 
 ### Snapshot Directories
 - `/home/.snapshots/`
-- `/nix/.snapshots/`
 - Enhanced `/.snapshots/`
 
 ---
@@ -369,14 +350,14 @@ All subvolumes mounted with optimized Btrfs options:
 ## Risk Mitigation Achieved
 
 ### Data Loss Prevention
-- **Multiple backup layers:** Root, Home, Package environments
+- **Two backup layers:** Root and Home directories
 - **Temporal coverage:** Hourly, daily, weekly, monthly snapshots
 - **Permanent archives:** Monthly snapshots never auto-deleted
 - **Instant recovery:** File-level restoration in seconds
 
 ### System Failure Protection
 - **Boot-time recovery:** GRUB snapshot integration
-- **Package conflicts:** Isolated Nix environments
+- **Package management:** Standard paths, better app compatibility
 - **Update failures:** Pre/post system snapshots
 - **Configuration corruption:** Timeline-based recovery
 
@@ -408,7 +389,7 @@ All subvolumes mounted with optimized Btrfs options:
 
 **Phase 1:** ✅ Complete - Home directory protection operational  
 **Phase 2:** ✅ Complete - Timeline automation functional  
-**Phase 3:** ✅ Complete - Nix integration successful  
+**Phase 3:** ✅ Complete - System cleanup and simplification successful
 **Phase 4:** ✅ Complete - Advanced features implemented  
 
 **Overall Status:** ✅ **PROJECT COMPLETE**

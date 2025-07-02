@@ -25,7 +25,7 @@ This document provides a comprehensive technical overview of the implemented thr
 ├── @cache (var/cache)
 ├── @log (var/log)
 ├── @tmp (var/tmp)
-└── @nix (nix store)
+└── @nix (nix store) (deleted)
 ```
 
 ### Mount Configuration (/etc/fstab)

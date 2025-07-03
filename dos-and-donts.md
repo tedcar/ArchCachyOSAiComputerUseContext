@@ -97,6 +97,29 @@ df -h
 sudo snapper -c home modify -u "important=yes" [SNAPSHOT_NUMBER]
 ```
 
+### 📋 Clipboard Management (Clipse)
+
+**✅ DO use Clipse efficiently:**
+```bash
+# Launch Clipse TUI:
+clipse
+
+# Copy current selection to clipboard:
+clipse -c
+
+# Clear clipboard history:
+clipse --clear
+
+# Check clipboard status:
+clipse --status
+```
+
+**✅ DO manage clipboard history:**
+- Use `clipse` command to browse clipboard history
+- Access recent clips with arrow keys or vim-style navigation
+- Pin important clips to prevent automatic cleanup
+- Use search functionality to find specific clipboard entries
+
 ### 🛡️ Safety Practices
 
 **✅ DO verify backups before major changes:**

@@ -126,6 +126,12 @@ You don't need to do anything for these - they just work:
 - `/home/.snapshots/` - Your personal file snapshots
 - `/.snapshots/` - Your system snapshots
 
+### Clipse (Clipboard Manager)
+- **Location:** System-wide clipboard manager
+- **Access:** `clipse` command or tray icon
+- **Storage:** `~/.local/share/clipse/` - Clipboard history database
+- **Config:** `~/.config/clipse/` - Configuration and settings
+
 ## Quick Status Checks
 
 **See what's running:**

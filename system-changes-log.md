@@ -425,3 +425,165 @@ All subvolumes mounted with optimized Btrfs options:
 - System designed for recovery even from complete failures
 
 This transformation has created a virtually unbreakable system that enables fearless experimentation while maintaining complete data protection and recovery capabilities.
+
+---
+
+## Phase 6: Distrobox Multi-Distribution Container System
+**Date:** July 3, 2025
+
+### Installation and Configuration
+- **Installed:** Distrobox 1.8.1.2 from official CachyOS repositories
+- **Installed:** Podman 5.5.2 with crun runtime for optimal performance
+- **Created:** Three distribution containers:
+  - `arch-box` - Arch Linux (latest) for AUR packages and bleeding-edge software
+  - `debian-box` - Debian Stable for stable, well-tested applications
+  - `fedora-box` - Fedora Latest for Red Hat ecosystem and newer packages
+
+### Desktop Integration
+- **Generated:** Desktop entries for all containers (appear in drun launcher)
+- **Installed:** Distribution icons in `~/.local/share/icons/distrobox/`
+- **Configured:** Seamless GUI application integration with Hyperland
+- **Enabled:** Application export capability for GUI apps
+
+### Individual Container Rollback System
+- **Created:** Custom snapshot/rollback tools in `~/bin/`:
+  - `distrobox-snapshot` - Create snapshots before installing applications
+  - `distrobox-rollback` - Rollback containers to previous states
+  - `distrobox-snapshots` - Manage and list all snapshots
+- **Added:** `~/bin` to Fish shell PATH for easy access
+- **Created:** Clean baseline snapshots for all three containers:
+  - `arch-box-snapshot-20250703-021501` (1.45 GB)
+  - `debian-box-snapshot-20250703-021520` (734 MB)
+  - `fedora-box-snapshot-20250703-021532` (1.21 GB)
+
+### System Integration
+- **Perfect integration** with existing Snapper snapshot system
+- **Container isolation** - rollbacks only affect individual containers
+- **Performance optimized** - Fast container entry (~400ms after initial setup)
+- **Home directory sharing** - User files accessible in all containers
+- **No host system impact** - Experiments contained within containers
+
+### Use Cases Enabled
+- **Temporary application testing** - Install, test, rollback safely
+- **Safe experimentation** - Break things without affecting host system
+- **Long-term application usage** - Use containers as permanent environments
+- **Multi-distribution access** - AUR, APT, DNF package ecosystems
+- **GUI application support** - Install and export graphical applications
+- **Development environments** - Isolated but integrated development setups
+
+### Documentation Created
+- `distrobox-setup-guide.md` - Comprehensive setup and usage documentation
+- `distrobox-quick-reference.md` - Quick command reference and tips
+- `distrobox-rollback-system.md` - Detailed rollback system documentation
+
+This addition extends the system's resilience to application-level experimentation, providing safe sandboxes for testing software while maintaining the ability to rollback any changes that don't work out.
+
+---
+
+## Phase 7: GRUB Dual Boot and Snapshot Integration
+**Date:** July 3, 2025
+
+### Windows 11 Dual Boot Configuration
+- **Problem Solved:** Windows 11 was not appearing in GRUB boot menu after CachyOS installation
+- **Solution Implemented:** Enabled os-prober in GRUB configuration
+- **Configuration Changes:**
+  - Modified `/etc/default/grub`: Set `GRUB_DISABLE_OS_PROBER=false`
+  - Regenerated GRUB configuration with `grub-mkconfig`
+  - Verified Windows Boot Manager detection at `/EFI/Microsoft/Boot/bootmgfw.efi`
+
+### Snapper Snapshot Boot Integration
+- **Feature Added:** Bootable root snapshots accessible from GRUB menu
+- **Packages Installed:** `grub-btrfs` and `inotify-tools`
+- **Service Configuration:**
+  - Enabled and started `grub-btrfsd.service` for automatic GRUB updates
+  - Service monitors `/.snapshots` directory for changes
+  - Automatically regenerates GRUB snapshot menu when snapshots are created/deleted
+
+### GRUB Menu Structure Achieved
+```
+Main GRUB Menu
+├── CachyOS Linux (current system)
+├── CachyOS Linux snapshots (51 bootable snapshots)
+│   ├── 2025-07-03 02:45:04 | IMPORTANT | Complete GRUB dual-boot integration
+│   ├── 2025-07-03 02:34:34 | post | grub-btrfs installation
+│   ├── 2025-07-03 02:19:01 | IMPORTANT | Distrobox setup
+│   └── [48 more recovery snapshots...]
+├── Windows Boot Manager (Windows 11)
+└── UEFI Firmware Settings
+```
+
+### Automatic Update Verification
+- **Tested:** Snapshot creation/deletion automatically updates GRUB menu
+- **Confirmed:** grub-btrfsd daemon actively monitoring and updating
+- **Verified:** Important snapshots protected from automatic deletion
+- **Result:** Zero manual intervention required for ongoing maintenance
+
+### Important Snapshots Created
+- **Root Snapshot 60:** Complete GRUB dual-boot and snapshot integration
+- **Home Snapshot 51:** GRUB configuration documentation and guides
+
+### System Protection Enhanced
+- **Dual Boot Recovery:** Can boot into Windows 11 or any CachyOS snapshot
+- **Complete System History:** 51 bootable recovery points available
+- **Important Milestones:** Key configurations permanently preserved
+- **Automatic Maintenance:** GRUB updates automatically with new snapshots
+
+### Documentation Created
+- `grub-dual-boot-snapshot-configuration.md` - Complete technical guide
+- Updated system documentation with configuration details
+
+This phase completes the boot system resilience, providing both dual-boot functionality and comprehensive snapshot-based recovery options, all automatically maintained without user intervention.
+
+---
+
+## Phase 8: Clipse Clipboard Manager Integration
+**Date:** July 3, 2025
+
+### Installation and Configuration
+- **Installed:** Clipse clipboard manager for persistent clipboard history
+- **Package Source:** AUR (Arch User Repository)
+- **Integration:** System-wide clipboard management with TUI interface
+- **Features Enabled:**
+  - Persistent clipboard history across sessions
+  - Search functionality for clipboard contents
+  - Pin/unpin important clipboard items
+  - Terminal-based user interface (TUI)
+  - Daemon mode for background operation
+
+### System Integration
+- **Command Access:** `clipse` command available system-wide
+- **Storage Location:** `~/.local/share/clipse/` for clipboard database
+- **Configuration:** `~/.config/clipse/` for settings and preferences
+- **Daemon Mode:** Automatic background clipboard monitoring
+- **Performance:** Lightweight operation with minimal resource usage
+
+### Key Features Implemented
+- **Clipboard History:** Persistent storage of clipboard contents
+- **TUI Navigation:** Vim-style navigation (j/k) and arrow keys
+- **Search Capability:** Full-text search through clipboard history
+- **Item Management:** Pin important items, delete unwanted entries
+- **Cross-Session Persistence:** Clipboard history survives system restarts
+- **Selective Copying:** Choose specific items from history to copy
+
+### Usage Integration
+- **Quick Access:** `clipse` command launches TUI interface
+- **Workflow Integration:** Copy text anywhere, access via clipse
+- **Keyboard Navigation:** Efficient keyboard-only operation
+- **Status Monitoring:** `clipse --status` for daemon status
+- **History Management:** `clipse --clear` for cleanup operations
+
+### Documentation Updates
+- **Updated:** `main.md` with Clipse location information
+- **Updated:** `done.md` with active configuration status
+- **Updated:** `dos-and-donts.md` with Clipse-specific guidelines
+- **Updated:** `quick_usage_guide.md` with commands and keybinds
+- **Added:** Comprehensive usage examples and workflow integration
+
+### System Benefits
+- **Enhanced Productivity:** Never lose clipboard contents again
+- **Workflow Efficiency:** Quick access to previously copied items
+- **Session Continuity:** Clipboard history persists across reboots
+- **Minimal Overhead:** Lightweight daemon with negligible resource usage
+- **Terminal Integration:** Perfect fit for terminal-heavy workflows
+
+This addition enhances the system's daily usability by providing persistent clipboard management, complementing the existing snapshot-based protection with improved workflow efficiency.

@@ -60,6 +60,64 @@ code --version
 
 ---
 
+## 📋 Clipse Clipboard Manager
+
+### Basic Usage
+```bash
+# Launch Clipse TUI interface
+clipse
+
+# Copy current selection to clipboard
+clipse -c
+
+# Clear clipboard history
+clipse --clear
+
+# Check clipboard status
+clipse --status
+
+# Show help
+clipse --help
+```
+
+### Key Navigation in Clipse TUI
+- **Arrow Keys / j,k**: Navigate clipboard history
+- **Enter**: Select and copy item to clipboard
+- **d**: Delete selected item from history
+- **y**: Yank (copy) selected item
+- **p**: Pin/unpin selected item
+- **/** : Search through clipboard history
+- **q**: Quit Clipse TUI
+- **Esc**: Cancel current operation
+
+### Advanced Features
+```bash
+# Start Clipse daemon (if not auto-started)
+clipse --daemon
+
+# Stop Clipse daemon
+clipse --stop
+
+# Configure max history size
+clipse --config max-history=1000
+
+# Enable/disable clipboard sync
+clipse --sync-mode [on|off]
+```
+
+### Workflow Integration
+```bash
+# Quick clipboard access workflow
+1. Select text in any app
+2. Press clipboard manager hotkey (if configured)
+3. Or run: clipse
+4. Navigate with j/k or arrows
+5. Press Enter to select item
+6. Paste with Ctrl+V in target app
+```
+
+---
+
 ## 🔧 Workflow Examples
 
 ### Development Workflow

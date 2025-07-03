@@ -12,6 +12,7 @@
 - **root:** 11 snapshots (system protection)
 - **home:** 28 snapshots (timeline + archives + manual)
 - **nix:** 2 snapshots (package environment backup)
+- **clipse:** Clipboard manager with persistent history
 - **All configurations:** ✅ **OPERATIONAL**
 
 ### **⚙️ AUTOMATED SERVICES**
